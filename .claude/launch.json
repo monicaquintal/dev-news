@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "dev-news", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8080", "-d", "public"], "port": 8080 }
+  ]
+}

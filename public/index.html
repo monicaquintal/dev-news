@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dev News</title>
+<meta name="description" content="Notícias de tecnologia, desenvolvimento e segurança da informação">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <h1>Dev News</h1>
+    <span id="updated" class="muted"></span>
+  </div>
+  <input id="q" type="search" placeholder="Buscar notícias…" aria-label="Buscar" autocomplete="off">
+  <nav class="chips" id="cats" aria-label="Categoria">
+    <button data-cat="all" class="on">Tudo</button>
+    <button data-cat="dev">Dev</button>
+    <button data-cat="seguranca">Segurança</button>
+    <button data-cat="geral">Geral</button>
+  </nav>
+  <nav class="chips small" id="langs" aria-label="Idioma">
+    <button data-lang="all" class="on">PT + EN</button>
+    <button data-lang="pt">PT</button>
+    <button data-lang="en">EN</button>
+  </nav>
+</header>
+<main id="list" aria-live="polite"><p class="empty">Carregando…</p></main>
+<script src="app.js"></script>
+</body>
+</html>
