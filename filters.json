@@ -1,4 +1,8 @@
 {
+  "patterns": {
+    "tech": "tecnolog|inova[çc]|startup|digital|software|aplicativo|\\bapp\\b|intelig[êe]ncia artificial|\\bIA\\b|ciber|hacker|backup|internet|\\b5G\\b|fibra [óo]tica|drone|rob[ôo]|inform[áa]tica|\\bTI\\b|data ?center|wi-?fi|conectividade|eletr[ôo]nic|hackathon|cidade inteligente|parque tecnol",
+    "regiao": "santos|guaruj[áa]|cubat[ãa]o|s[ãa]o vicente|praia grande|bertioga|peru[íi]be|itanha[ée]m|mongagu[áa]|baixada|litoral|\\bAPS\\b|\\bETEC\\b|\\bFatec"
+  },
   "blockTitle": [
     "mercado ?livre|magalu|magazine luiza|shopee|aliexpress|americanas|amazon prime|prime day|kabum",
     "black (friday|november)|cyber monday|\\b11\\.11\\b|\\b12\\.12\\b",

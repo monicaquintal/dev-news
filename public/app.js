@@ -1,8 +1,8 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const list = $("#list");
-  const COLORS = { dev: "var(--dev)", seguranca: "var(--seguranca)", geral: "var(--geral)" };
-  const LABELS = { dev: "Dev", seguranca: "Segurança", geral: "Geral" };
+  const COLORS = { dev: "var(--dev)", seguranca: "var(--seguranca)", geral: "var(--geral)", baixada: "var(--baixada)" };
+  const LABELS = { dev: "Dev", seguranca: "Segurança", geral: "Tecnologia", baixada: "Baixada Santista" };
   const state = { cat: "all", lang: "all", q: "", items: [] };
 
   let read = new Set();
@@ -100,6 +100,7 @@
       if (!b) return;
       state[key] = b.dataset[attr];
       $(sel).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+      b.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
       render();
       window.scrollTo({ top: 0 });
     });

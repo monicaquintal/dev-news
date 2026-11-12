@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MAX_ITEMS = 200;
 const PER_SOURCE = 15;
+const REGIONAL_LIMIT = 40; // notícias da Baixada Santista mantidas, além das MAX_ITEMS
 const MAX_AGE_DAYS = 10;
 const FEED_TIMEOUT = 15000;
 const OG_TIMEOUT = 6000;
@@ -37,6 +38,7 @@ function unwrap(s = "") {
 function stripHtml(html = "") {
   return decode(
     html
+      .replace(/<!\[CDATA\[|\]\]>/g, " ")
       .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
       .replace(/<[^>]+>/g, " ")
   ).replace(/\s+/g, " ").trim();
@@ -96,12 +98,23 @@ function parseFeed(xml, src) {
     if (isNaN(date)) continue;
     let summary = truncate(stripHtml(tag(b, "description") || tag(b, "summary") || html));
     if (summary.toLowerCase().startsWith(title.toLowerCase().slice(0, 40)) && summary.length < title.length + 20) summary = "";
+    // Google Notícias: o título vem como "Manchete - Veículo" e a descrição é só uma lista de links
+    let name = src.name, finalTitle = title;
+    if (src.googleNews) {
+      const veiculo = stripHtml(tag(b, "source"));
+      if (veiculo) {
+        name = veiculo;
+        if (title.endsWith(` - ${veiculo}`)) finalTitle = title.slice(0, -(veiculo.length + 3));
+      }
+      summary = "";
+    }
     // Hacker News e similares só trazem links de comentários
     if (/^(Article URL|Comments URL|Points:)/i.test(summary)) summary = "";
     items.push({
-      title,
+      title: finalTitle,
       url: link,
-      source: src.name,
+      source: name,
+      gnews: !!src.googleNews || undefined,
       category: src.category,
       lang: src.lang,
       date: date.toISOString(),
@@ -163,6 +176,10 @@ async function main() {
   } catch {}
   const isAd = (i) => blockTitle.some((r) => r.test(i.title)) || blockUrl.some((r) => r.test(i.url));
   let blocked = 0;
+  // padrões nomeados em filters.json ("@tech", "@regiao") reaproveitados por várias fontes
+  let named = {};
+  try { named = JSON.parse(await readFile(resolve(ROOT, "filters.json"), "utf8")).patterns || {}; } catch {}
+  const pattern = (p) => (p.startsWith("@") ? named[p.slice(1)] ?? "$^" : p);
 
   const results = await Promise.all(
     sources.map(async (src) => {
@@ -170,8 +187,16 @@ async function main() {
         const xml = await get(src.url, FEED_TIMEOUT);
         let items = parseFeed(xml, src);
         if (src.filter) {
-          const re = new RegExp(src.filter, "i");
-          items = items.filter((i) => re.test(`${i.title} ${i.summary}`));
+          const re = new RegExp(pattern(src.filter), "i");
+          items = items.filter((i) => re.test(src.filterOn === "title" ? i.title : `${i.title} ${i.summary}`));
+        }
+        if (src.region) {
+          const rr = new RegExp(pattern(src.region), "i");
+          items = items.filter((i) => rr.test(i.title));
+        }
+        if (src.exclude) {
+          const ex = new RegExp(src.exclude, "i");
+          items = items.filter((i) => !ex.test(i.title));
         }
         const before = items.length;
         items = items.filter((i) => !isAd(i));
@@ -191,17 +216,25 @@ async function main() {
   // dedupe por URL e título
   const seenUrl = new Set();
   const seenTitle = new Set();
-  const all = results.flat().sort((a, b) => b.date.localeCompare(a.date)).filter((i) => {
+  // gnews por último na ordenação, para que o feed direto (com imagem) vença o duplicado
+  const deduped = results.flat().sort((a, b) => b.date.localeCompare(a.date) || (a.gnews ? 1 : 0) - (b.gnews ? 1 : 0)).filter((i) => {
     const u = i.url.replace(/[?#].*$/, "").replace(/\/$/, "");
     const t = normTitle(i.title);
     if (seenUrl.has(u) || seenTitle.has(t)) return false;
     seenUrl.add(u);
     seenTitle.add(t);
     return true;
-  }).slice(0, MAX_ITEMS);
+  });
+  // a seção regional tem cota própria, para não ser engolida pelo volume das fontes globais
+  const regional = deduped.filter((i) => i.category === "baixada").slice(0, REGIONAL_LIMIT);
+  const all = [...deduped.filter((i) => i.category !== "baixada").slice(0, MAX_ITEMS), ...regional]
+    .sort((a, b) => b.date.localeCompare(a.date));
 
-  // imagens faltantes via og:image (apenas para itens mais recentes, e só quando o feed tem resumo ou é fonte de notícia)
-  const missing = all.filter((i) => !i.image && i.source !== "Hacker News" && i.source !== "Lobsters").slice(0, OG_LIMIT);
+  // imagens faltantes via og:image (itens regionais primeiro; páginas do Google Notícias não servem)
+  const missing = all
+    .filter((i) => !i.image && !i.gnews && i.source !== "Hacker News" && i.source !== "Lobsters")
+    .sort((a, b) => (b.category === "baixada") - (a.category === "baixada"))
+    .slice(0, OG_LIMIT);
   await Promise.all(missing.map(async (i) => { i.image = await ogImage(i.url); }));
 
   // tradução dos títulos em inglês (com cache para não retraduzir a cada coleta)

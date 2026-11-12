@@ -7,7 +7,7 @@ Agregador leve de notícias de tecnologia: desenvolvimento, segurança da inform
 - Lista de notícias em cards com **foto, título e resumo** de algumas linhas.
 - **Card clicável**: abre a notícia original em nova aba, no navegador.
 - **Subtítulo em português** abaixo do título das notícias em inglês (tradução offline).
-- Filtros por categoria (Dev, Segurança, Geral) e idioma (PT, EN), e busca por texto.
+- Filtros por categoria (Dev, Segurança, Tecnologia e **Baixada Santista**) e idioma (PT, EN), e busca por texto.
 - Tema claro ou escuro automático, conforme o celular.
 - Notícias já abertas ficam esmaecidas.
 - Funciona offline com a última lista carregada.
@@ -17,10 +17,12 @@ Agregador leve de notícias de tecnologia: desenvolvimento, segurança da inform
 
 | Categoria | Fontes |
 |---|---|
-| Brasil (geral) | Tecnoblog, Canaltech, Olhar Digital, TecMundo, g1 Tecnologia\*, UOL Tilt\* |
+| Tecnologia (Brasil) | Tecnoblog, Canaltech, Olhar Digital, TecMundo, g1 Tecnologia\*, UOL Tilt\* |
 | Segurança | CERT.br, BleepingComputer, Krebs on Security, The Hacker News, Dark Reading, Schneier on Security, CISA Alerts, Project Zero |
 | Desenvolvimento | Hacker News, Lobsters, InfoQ, GitHub Blog, DEV Community, Pragmatic Engineer |
-| Geral (EN) | Ars Technica, The Verge, TechCrunch, The Register, MIT Technology Review |
+| Tecnologia (EN) | Ars Technica, The Verge, TechCrunch, The Register, MIT Technology Review |
+
+**Baixada Santista** (aba própria, em laranja): g1 Santos e Região, Santa Portal, Jornal da Orla e duas buscas do Google Notícias (tecnologia e inovação na região), que cobrem A Tribuna, Diário do Litoral, THMais, Portogente e outros. Só entram notícias com termo de tecnologia no **título** (hacker, ciber, inovação, startup, IA, internet...). Os portais A Tribuna e Diário do Litoral bloqueiam leitores automáticos, por isso aparecem apenas via Google Notícias. As notícias do Google Notícias não trazem foto nem resumo.
 
 \* Fontes generalistas: passam por um filtro de palavras-chave para manter só o que é de tecnologia.
 
@@ -109,9 +111,14 @@ Observações:
 { "name": "Tecnoblog", "url": "https://tecnoblog.net/feed/", "category": "geral", "lang": "pt" }
 ```
 
-- `category`: `dev`, `seguranca` ou `geral`.
+- `category`: `dev`, `seguranca`, `geral` (aparece como "Tecnologia" no site) ou `baixada`.
 - `lang`: `pt` ou `en`. Só os títulos em `en` são traduzidos.
-- `filter` (opcional): expressão regular; só entram itens cujo título ou resumo combinem.
+- `filter` (opcional): expressão regular; só entram itens cujo título ou resumo combinem. Use `"filterOn": "title"` para olhar só o título. Também aceita um padrão nomeado de `filters.json`, como `"@tech"`.
+- `region` (opcional): expressão regular (ou `"@regiao"`) que o título também precisa ter.
+- `exclude` (opcional): descarta itens cujo título combine.
+- `googleNews` (opcional): marque `true` para feeds do Google Notícias (o veículo vem do próprio feed).
+
+Para ampliar a seção regional (outras cidades, outros assuntos), edite `patterns.regiao` e `patterns.tech` em `filters.json`, ou adicione uma busca do Google Notícias em `sources.json`.
 
 **Bloquear propagandas e ofertas:** edite `filters.json`. São listas de expressões regulares (sem diferenciar maiúsculas de minúsculas):
 
