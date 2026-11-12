@@ -154,6 +154,16 @@ async function main() {
   const cutoff = Date.now() - MAX_AGE_DAYS * 864e5;
   const status = [];
 
+  // bloqueio de propaganda/ofertas (filters.json): regex no título e na URL
+  let blockTitle = [], blockUrl = [];
+  try {
+    const f = JSON.parse(await readFile(resolve(ROOT, "filters.json"), "utf8"));
+    blockTitle = (f.blockTitle || []).map((p) => new RegExp(p, "i"));
+    blockUrl = (f.blockUrl || []).map((p) => new RegExp(p, "i"));
+  } catch {}
+  const isAd = (i) => blockTitle.some((r) => r.test(i.title)) || blockUrl.some((r) => r.test(i.url));
+  let blocked = 0;
+
   const results = await Promise.all(
     sources.map(async (src) => {
       try {
@@ -163,6 +173,9 @@ async function main() {
           const re = new RegExp(src.filter, "i");
           items = items.filter((i) => re.test(`${i.title} ${i.summary}`));
         }
+        const before = items.length;
+        items = items.filter((i) => !isAd(i));
+        blocked += before - items.length;
         items = items.filter((i) => +new Date(i.date) >= cutoff && +new Date(i.date) <= Date.now() + 36e5)
           .sort((a, b) => b.date.localeCompare(a.date))
           .slice(0, PER_SOURCE);
@@ -217,7 +230,8 @@ async function main() {
   await mkdir(resolve(ROOT, "public"), { recursive: true });
   await writeFile(resolve(ROOT, "public/news.json"), JSON.stringify({ updated: new Date().toISOString(), items: all }));
   console.log(status.sort().join("\n"));
-  console.log(`\n${all.length} notícias, ${all.filter((i) => i.image).length} com imagem, ${all.filter((i) => i.summary).length} com resumo`);
+  console.log(`\n${blocked} itens de propaganda/ofertas bloqueados`);
+  console.log(`${all.length} notícias, ${all.filter((i) => i.image).length} com imagem, ${all.filter((i) => i.summary).length} com resumo`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -1,0 +1,13 @@
+{
+  "blockTitle": [
+    "mercado ?livre|magalu|magazine luiza|shopee|aliexpress|americanas|amazon prime|prime day|kabum",
+    "black (friday|november)|cyber monday|\\b11\\.11\\b|\\b12\\.12\\b",
+    "cupo(m|ns)|\\bofertas?\\b|promo(ç|c)(ão|ões|ao|oes)|descontos?|\\d+ ?% ?off|\\boff\\b",
+    "(cai|caiu|cair|queda)( de| no)? pre(ç|c)o|menor pre(ç|c)o|metade do pre(ç|c)o|quanto vale pagar",
+    "melhor(es)? .{0,40} em 20\\d\\d|para comprar|vale a pena comprar|onde comprar",
+    "\\bdeals?\\b|\\bcoupons?\\b|\\bdiscounts?\\b|\\bon sale\\b|\\bsales? (is|are) live"
+  ],
+  "blockUrl": [
+    "/(ofertas?|cupons?|promocoes|promocao|deals)(/|$)"
+  ]
+}

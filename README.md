@@ -43,6 +43,7 @@ sources.json ──> scripts/fetch.mjs ──> public/news.json ──> public/ 
 
 ```
 sources.json              lista de feeds (editar aqui para mudar as fontes)
+filters.json              termos bloqueados (propagandas e ofertas)
 scripts/fetch.mjs         coletor de feeds
 scripts/translate.py      tradução EN -> PT offline
 public/
@@ -111,6 +112,13 @@ Observações:
 - `category`: `dev`, `seguranca` ou `geral`.
 - `lang`: `pt` ou `en`. Só os títulos em `en` são traduzidos.
 - `filter` (opcional): expressão regular; só entram itens cujo título ou resumo combinem.
+
+**Bloquear propagandas e ofertas:** edite `filters.json`. São listas de expressões regulares (sem diferenciar maiúsculas de minúsculas):
+
+- `blockTitle`: se o **título** combinar, a notícia é descartada (ex.: `mercado ?livre`, `black friday`, `% off`, `cupom`).
+- `blockUrl`: se o **endereço** combinar, a notícia é descartada (ex.: `/ofertas/`).
+
+Por padrão ficam de fora lojas e promoções (Mercado Livre, Magalu, Shopee, Prime Day, Black Friday, 11.11), descontos, cupons e guias de compra ("Melhor TV em 2026: 8 modelos para comprar"). Como o filtro olha só o título, uma notícia séria que cite uma loja (por exemplo, um vazamento no Mercado Livre) também seria bloqueada: para liberar, remova o termo da lista. A coleta mostra quantos itens foram bloqueados.
 
 **Ajustes do coletor:** no topo de `scripts/fetch.mjs`, `MAX_ITEMS` (total de notícias), `PER_SOURCE` (por fonte) e `MAX_AGE_DAYS` (idade máxima).
 
