@@ -24,7 +24,14 @@ def ensure_model():
     if not os.path.exists(local):
         local = os.path.join(MODEL_DIR, "en_pt.argosmodel")
         print("baixando modelo en-pt...", file=sys.stderr)
-        urllib.request.urlretrieve(MODEL_URL, local)
+        # o servidor devolve 403 para o User-Agent padrão do urllib
+        req = urllib.request.Request(MODEL_URL, headers={"User-Agent": "Mozilla/5.0 (dev-news)"})
+        with urllib.request.urlopen(req, timeout=300) as r, open(local, "wb") as f:
+            while True:
+                chunk = r.read(1 << 20)
+                if not chunk:
+                    break
+                f.write(chunk)
     with zipfile.ZipFile(local) as z:
         for n in z.namelist():
             if n.startswith("translate-en_pt-1_9/model/") or n.endswith("sentencepiece.model"):

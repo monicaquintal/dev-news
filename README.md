@@ -48,7 +48,7 @@ scripts/translate.py      tradução EN -> PT offline
 public/
   index.html, app.js, style.css    site
   sw.js, manifest.webmanifest      PWA (offline e instalação)
-  icon.svg
+  icon.svg, icon-*.png, apple-touch-icon.png   logo e ícones (gerados por scripts/make-icons.py)
   news.json                        gerado, não vai para o git
 .github/workflows/update.yml       atualiza e publica a cada 2 horas
 ```

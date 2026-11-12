@@ -10,6 +10,12 @@
   const saveRead = () => { try { localStorage.setItem("read", JSON.stringify([...read].slice(-500))); } catch {} };
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  };
 
   function ago(iso) {
     const m = Math.max(1, Math.round((Date.now() - new Date(iso)) / 60000));
@@ -20,66 +26,48 @@
     return `há ${d} ${d === 1 ? "dia" : "dias"}`;
   }
 
-  function card(i) {
-    const a = document.createElement("a");
-    a.className = "card" + (read.has(i.url) ? " read" : "");
+  function placeholder(i) {
+    return el("div", "ph", i.source.trim()[0].toUpperCase());
+  }
+
+  function card(i, n) {
+    const a = el("a", "card" + (read.has(i.url) ? " read" : ""));
     a.href = i.url;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.style.setProperty("--c", COLORS[i.category] || "var(--accent)");
+    a.style.animationDelay = Math.min(n, 8) * 30 + "ms";
 
-    let media;
+    const media = el("div", "media");
     if (i.image) {
-      media = document.createElement("img");
-      media.className = "thumb";
-      media.loading = "lazy";
-      media.decoding = "async";
-      media.referrerPolicy = "no-referrer";
-      media.alt = "";
-      media.src = i.image;
-      media.onerror = () => media.replaceWith(placeholder(i));
+      const img = el("img", "thumb");
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.referrerPolicy = "no-referrer";
+      img.alt = "";
+      img.src = i.image;
+      img.onerror = () => img.replaceWith(placeholder(i));
+      media.append(img);
     } else {
-      media = placeholder(i);
+      media.append(placeholder(i));
     }
+    media.append(el("span", "badge", LABELS[i.category] || i.category));
     a.append(media);
 
-    const body = document.createElement("div");
-    body.className = "body";
-    const h = document.createElement("h2");
-    h.textContent = i.title;
-    body.append(h);
+    const body = el("div", "body");
+    const src = el("div", "src");
+    src.append(el("b", "", i.source), el("i"), el("span", "", ago(i.date)));
+    body.append(src, el("h2", "", i.title));
     if (i.titlePt) {
-      const sub = document.createElement("div");
-      sub.className = "sub";
+      const sub = el("div", "sub", i.titlePt);
       sub.lang = "pt-BR";
-      sub.textContent = i.titlePt;
       body.append(sub);
     }
-    if (i.summary) {
-      const p = document.createElement("p");
-      p.textContent = i.summary;
-      body.append(p);
-    }
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.textContent = LABELS[i.category] || i.category;
-    const src = document.createElement("span");
-    src.textContent = `${i.source} · ${ago(i.date)}`;
-    meta.append(tag, src);
-    body.append(meta);
+    if (i.summary) body.append(el("p", "sum", i.summary));
     a.append(body);
 
     a.addEventListener("click", () => { read.add(i.url); a.classList.add("read"); saveRead(); });
     return a;
-  }
-
-  function placeholder(i) {
-    const d = document.createElement("div");
-    d.className = "ph";
-    d.textContent = i.source.trim()[0].toUpperCase();
-    return d;
   }
 
   function render() {
@@ -89,16 +77,16 @@
       (state.lang === "all" || i.lang === state.lang) &&
       (!q || norm(`${i.title} ${i.titlePt || ""} ${i.summary} ${i.source}`).includes(q)));
     if (!items.length) {
-      list.replaceChildren(Object.assign(document.createElement("p"), { className: "empty", textContent: "Nenhuma notícia encontrada." }));
+      list.replaceChildren(el("p", "empty", "Nenhuma notícia encontrada."));
       return;
     }
     const PAGE = 30;
     let shown = 0;
-    const more = Object.assign(document.createElement("button"), { className: "more", textContent: "Mostrar mais" });
+    const more = el("button", "more", "Mostrar mais");
     const next = () => {
       const slice = items.slice(shown, shown + PAGE);
+      more.before(...slice.map((i, k) => card(i, k)));
       shown += slice.length;
-      more.before(...slice.map(card));
       more.hidden = shown >= items.length;
     };
     more.addEventListener("click", next);
@@ -113,6 +101,7 @@
       state[key] = b.dataset[attr];
       $(sel).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
       render();
+      window.scrollTo({ top: 0 });
     });
   }
   bind("#cats", "cat", "cat");
@@ -125,14 +114,16 @@
       const r = await fetch("news.json", { cache: "no-cache" });
       const d = await r.json();
       state.items = d.items;
-      $("#updated").textContent = `atualizado ${ago(d.updated)}`;
+      const u = $("#updated");
+      u.textContent = `Atualizado ${ago(d.updated)}`;
+      u.hidden = false;
       render();
     } catch {
-      list.innerHTML = '<p class="empty">Não foi possível carregar as notícias.</p>';
+      list.replaceChildren(el("p", "empty", "Não foi possível carregar as notícias."));
     }
   }
   load();
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && state.items.length) load(); });
 
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

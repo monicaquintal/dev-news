@@ -2,35 +2,59 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dev News</title>
 <meta name="description" content="Notícias de tecnologia, desenvolvimento e segurança da informação">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev News">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="top">
-  <div class="bar">
-    <h1>Dev News</h1>
-    <span id="updated" class="muted"></span>
+  <div class="wrap">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+        <rect width="512" height="512" rx="112" fill="url(#lg)"/>
+        <g fill="none" stroke-width="38" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M205 170 125 256 205 342" stroke="#fff"/><path d="M307 170 387 256 307 342" stroke="#fff"/><path d="M282 150 230 362" stroke="#fef08a"/>
+        </g>
+      </svg>
+      <div class="titles">
+        <h1>Dev News</h1>
+        <span class="tagline">Tecnologia · Dev · Segurança</span>
+      </div>
+      <span id="updated" class="pill" hidden></span>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar notícias…" aria-label="Buscar" autocomplete="off">
+    </label>
+    <div class="filters">
+      <nav class="chips" id="cats" aria-label="Categoria">
+        <button data-cat="all" class="on">Tudo</button>
+        <button data-cat="dev">Dev</button>
+        <button data-cat="seguranca">Segurança</button>
+        <button data-cat="geral">Geral</button>
+      </nav>
+      <nav class="seg" id="langs" aria-label="Idioma">
+        <button data-lang="all" class="on">PT + EN</button>
+        <button data-lang="pt">PT</button>
+        <button data-lang="en">EN</button>
+      </nav>
+    </div>
   </div>
-  <input id="q" type="search" placeholder="Buscar notícias…" aria-label="Buscar" autocomplete="off">
-  <nav class="chips" id="cats" aria-label="Categoria">
-    <button data-cat="all" class="on">Tudo</button>
-    <button data-cat="dev">Dev</button>
-    <button data-cat="seguranca">Segurança</button>
-    <button data-cat="geral">Geral</button>
-  </nav>
-  <nav class="chips small" id="langs" aria-label="Idioma">
-    <button data-lang="all" class="on">PT + EN</button>
-    <button data-lang="pt">PT</button>
-    <button data-lang="en">EN</button>
-  </nav>
 </header>
-<main id="list" aria-live="polite"><p class="empty">Carregando…</p></main>
+<main id="list" class="wrap grid" aria-live="polite">
+  <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+</main>
 <script src="app.js"></script>
 </body>
 </html>

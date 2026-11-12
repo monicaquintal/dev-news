@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/fetch.mjs)",
+      "Bash(node -e \"const d=require\\('./public/news.json'\\);const e=d.items.filter\\(i=>i.lang==='en'\\);console.log\\(e.length,e.filter\\(i=>i.titlePt\\).length\\);e.slice\\(0,3\\).forEach\\(i=>console.log\\(i.title,'=>',i.titlePt\\)\\)\")",
+      "Bash(curl -s -m 10 -A \"dev-news-bot/1.0\" \"https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=pt&dt=t&q=hello%20world\")",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/pip list *)",
+      "Bash(python3 -m pip --version)",
+      "Bash(pip install *)",
+      "Bash(curl -sL -m 30 https://raw.githubusercontent.com/argosopentech/argospm-index/main/index.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 scripts/translate.py)",
+      "Bash(node -e \"const d=require\\('./public/news.json'\\);const e=d.items.filter\\(i=>i.lang==='en'\\);console.log\\(e.length,e.filter\\(i=>i.titlePt\\).length\\);e.slice\\(0,4\\).forEach\\(i=>console.log\\(i.title,'=>',i.titlePt\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./public/news.json'\\);const e=d.items.filter\\(i=>i.lang==='en'\\);console.log\\(e.length,e.filter\\(i=>i.titlePt\\).length,e.filter\\(i=>/▁/.test\\(i.titlePt||''\\)\\).length\\);e.slice\\(0,4\\).forEach\\(i=>console.log\\(i.title,'=>',i.titlePt\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./public/news.json'\\);console.log\\(d.items.filter\\(i=>/&[a-z]+;|&#/i.test\\(i.title+i.summary+\\(i.titlePt||''\\)\\)\\).length\\)\")",
+      "Bash(curl -s -m 20 https://monicaquintal.github.io/dev-news/news.json)",
+      "Bash(python3 -c \"import PIL;print\\('PIL',PIL.__version__\\)\")",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const d=JSON.parse\\(s\\);const e=d.items.filter\\(i=>i.lang==='en'\\);console.log\\(d.items.length,e.length,e.filter\\(i=>i.titlePt\\).length\\)}\\)\")",
+      "Read(//tmp/**)",
+      "Bash(curl -sI -m 20 -A \"Mozilla/5.0\" https://argos-net.com/v1/translate-en_pt-1_9.argosmodel)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Novo layout, logo e ícones; corrige download do modelo de tradução *)"
+    ]
+  }
+}
