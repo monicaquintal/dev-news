@@ -8,6 +8,7 @@ Agregador leve de notícias de tecnologia: desenvolvimento, segurança da inform
 - **Card clicável**: abre a notícia original em nova aba, no navegador.
 - **Subtítulo em português** abaixo do título das notícias em inglês (tradução offline).
 - Botão de filtros (ao lado da busca) com **período** (24 h, 3 dias, 7 dias ou tudo) e **assuntos** (IA, Vulnerabilidades, Ataques e vazamentos, Privacidade, Cloud e DevOps, Código e open source, Celulares e apps, Hardware e chips, Games, Mercado e negócios). Dá para marcar mais de um assunto.
+- **Ler mais tarde:** o marcador no canto da foto guarda a notícia, e a aba "Ler mais tarde" (com contador) lista as salvas. Cada item guarda uma cópia do card, então continua lá mesmo depois de sair do site (que só mantém os últimos 10 dias). Os dados ficam apenas no navegador do aparelho, sem sincronizar entre celular e computador; use **Exportar** e **Importar** (na própria aba) para levar a lista de um aparelho a outro ou fazer cópia de segurança. Limite de 300 itens.
 - Filtros por categoria (Dev, Segurança, Tecnologia e **Baixada Santista**) e idioma (PT, EN), e busca por texto.
 - Tema claro ou escuro automático, conforme o celular.
 - Notícias já abertas ficam esmaecidas.

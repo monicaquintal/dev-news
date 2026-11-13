@@ -4,6 +4,8 @@
   const COLORS = { dev: "var(--dev)", seguranca: "var(--seguranca)", geral: "var(--geral)", baixada: "var(--baixada)" };
   const LABELS = { dev: "Dev", seguranca: "Segurança", geral: "Tecnologia", baixada: "Baixada Santista" };
   const state = { cat: "all", lang: "all", q: "", days: 0, topics: new Set(), items: [] };
+  const MAX_LATER = 300;
+  const BOOKMARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>';
 
   let read = new Set();
   try { read = new Set(JSON.parse(localStorage.getItem("read") || "[]")); } catch {}
@@ -16,6 +18,113 @@
     if (text != null) e.textContent = text;
     return e;
   };
+
+  // ---------- Ler mais tarde (guardado só neste navegador, com cópia completa do card) ----------
+  const isHttp = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
+  function clean(x) {
+    if (!x || typeof x.title !== "string" || !isHttp(x.url)) return null;
+    const saved = Number.isFinite(+x.savedAt) ? +x.savedAt : Date.now();
+    const d = new Date(x.date);
+    return {
+      title: x.title.slice(0, 400),
+      url: x.url,
+      source: String(x.source || "—").slice(0, 80),
+      category: String(x.category || "geral"),
+      lang: x.lang === "en" ? "en" : "pt",
+      date: isNaN(d) ? new Date(saved).toISOString() : d.toISOString(),
+      summary: String(x.summary || "").slice(0, 400),
+      image: isHttp(x.image) ? x.image : "",
+      titlePt: x.titlePt ? String(x.titlePt).slice(0, 400) : undefined,
+      topics: Array.isArray(x.topics) ? x.topics.map(String).slice(0, 10) : undefined,
+      savedAt: saved,
+    };
+  }
+  let later = [];
+  try { later = JSON.parse(localStorage.getItem("later") || "[]").map(clean).filter(Boolean); } catch {}
+  const persist = () => {
+    try { localStorage.setItem("later", JSON.stringify(later)); }
+    catch { toast("Não foi possível salvar neste navegador"); }
+  };
+  const isSaved = (url) => later.some((x) => x.url === url);
+  function updateLaterCount() {
+    const c = $("#lcnt");
+    c.textContent = later.length ? later.length : "";
+    c.hidden = !later.length;
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
+  }
+
+  function toggleLater(i, btn) {
+    const idx = later.findIndex((x) => x.url === i.url);
+    if (idx >= 0) {
+      later.splice(idx, 1);
+      toast("Removido de Ler mais tarde");
+    } else {
+      later.unshift({ ...clean(i), savedAt: Date.now() });
+      later = later.slice(0, MAX_LATER);
+      toast("Salvo para ler mais tarde");
+    }
+    persist();
+    updateLaterCount();
+    if (state.cat === "later") { render(); return; }
+    setSaveBtn(btn, isSaved(i.url));
+  }
+
+  function setSaveBtn(btn, on) {
+    btn.classList.toggle("on", on);
+    btn.setAttribute("aria-pressed", String(on));
+    btn.setAttribute("aria-label", on ? "Remover de Ler mais tarde" : "Salvar para ler mais tarde");
+  }
+
+  function exportLater() {
+    const data = { app: "dev-news", version: 1, exported: new Date().toISOString(), items: later };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }));
+    const a = el("a");
+    a.href = url;
+    a.download = `dev-news-ler-mais-tarde-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function importLater(file) {
+    try {
+      const j = JSON.parse(await file.text());
+      const arr = (Array.isArray(j) ? j : j.items || []).map(clean).filter(Boolean);
+      const have = new Set(later.map((x) => x.url));
+      const novos = arr.filter((x) => !have.has(x.url));
+      later = [...later, ...novos].sort((a, b) => b.savedAt - a.savedAt).slice(0, MAX_LATER);
+      persist();
+      updateLaterCount();
+      toast(novos.length ? `${novos.length} notícia(s) importada(s)` : "Nenhuma notícia nova no arquivo");
+      render();
+    } catch {
+      toast("Arquivo inválido");
+    }
+  }
+
+  function toolbar() {
+    const bar = el("div", "toolbar");
+    bar.append(el("span", "", later.length ? `${later.length} salva${later.length > 1 ? "s" : ""} neste aparelho` : "Nada salvo ainda"));
+    const actions = el("div", "tb-actions");
+    const exp = el("button", "", "Exportar");
+    const imp = el("button", "", "Importar");
+    exp.type = imp.type = "button";
+    exp.disabled = !later.length;
+    exp.addEventListener("click", exportLater);
+    imp.addEventListener("click", () => $("#file").click());
+    actions.append(exp, imp);
+    bar.append(actions);
+    return bar;
+  }
 
   function ago(iso) {
     const m = Math.max(1, Math.round((Date.now() - new Date(iso)) / 60000));
@@ -31,12 +140,14 @@
   }
 
   function card(i, n) {
-    const a = el("a", "card" + (read.has(i.url) ? " read" : ""));
+    const art = el("article", "card" + (read.has(i.url) ? " read" : ""));
+    art.style.setProperty("--c", COLORS[i.category] || "var(--accent)");
+    art.style.animationDelay = Math.min(n, 8) * 30 + "ms";
+
+    const a = el("a", "clink");
     a.href = i.url;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.style.setProperty("--c", COLORS[i.category] || "var(--accent)");
-    a.style.animationDelay = Math.min(n, 8) * 30 + "ms";
 
     const media = el("div", "media");
     if (i.image) {
@@ -65,9 +176,17 @@
     }
     if (i.summary) body.append(el("p", "sum", i.summary));
     a.append(body);
+    a.addEventListener("click", () => { read.add(i.url); art.classList.add("read"); saveRead(); });
 
-    a.addEventListener("click", () => { read.add(i.url); a.classList.add("read"); saveRead(); });
-    return a;
+    // o botão fica fora do link, para tocar nele não abrir a notícia
+    const btn = el("button", "save");
+    btn.type = "button";
+    btn.innerHTML = BOOKMARK;
+    setSaveBtn(btn, isSaved(i.url));
+    btn.addEventListener("click", () => toggleLater(i, btn));
+
+    art.append(a, btn);
+    return art;
   }
 
   function updateCount() {
@@ -92,14 +211,19 @@
     updateCount();
     const now = Date.now();
     const q = norm(state.q.trim());
-    const items = state.items.filter((i) =>
-      (state.cat === "all" || i.category === state.cat) &&
+    const isLater = state.cat === "later";
+    const items = (isLater ? later : state.items).filter((i) =>
+      (state.cat === "all" || isLater || i.category === state.cat) &&
       (state.lang === "all" || i.lang === state.lang) &&
       (!state.days || now - new Date(i.date) <= state.days * 864e5) &&
       (!state.topics.size || (i.topics || []).some((t) => state.topics.has(t))) &&
       (!q || norm(`${i.title} ${i.titlePt || ""} ${i.summary} ${i.source}`).includes(q)));
+    const head = isLater ? [toolbar()] : [];
     if (!items.length) {
-      list.replaceChildren(el("p", "empty", "Nenhuma notícia encontrada."));
+      const msg = isLater && !later.length
+        ? "Toque no marcador de um card para guardar a notícia e ler depois."
+        : "Nenhuma notícia encontrada.";
+      list.replaceChildren(...head, el("p", "empty", msg));
       return;
     }
     const PAGE = 30;
@@ -112,7 +236,7 @@
       more.hidden = shown >= items.length;
     };
     more.addEventListener("click", next);
-    list.replaceChildren(more);
+    list.replaceChildren(...head, more);
     next();
   }
 
@@ -158,6 +282,11 @@
     renderTopics(state.topicDefs || []);
     render();
   });
+  $("#file").addEventListener("change", (e) => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (f) importLater(f);
+  });
 
   let t;
   $("#q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 150); });
@@ -177,6 +306,7 @@
       list.replaceChildren(el("p", "empty", "Não foi possível carregar as notícias."));
     }
   }
+  updateLaterCount();
   load();
   document.addEventListener("visibilitychange", () => { if (!document.hidden && state.items.length) load(); });
 

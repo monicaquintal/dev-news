@@ -93,6 +93,26 @@ h1{margin:0;font-size:1.3rem;font-weight:800;letter-spacing:-.02em;background:li
 
 .more{grid-column:1/-1;justify-self:center;padding:12px 28px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 8px 20px -8px var(--accent)}
 .more[hidden]{display:none}
+
+/* ler mais tarde */
+.card{position:relative}
+.clink{display:flex;flex-direction:column;flex:1;color:inherit;text-decoration:none}
+.clink:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;border-radius:20px}
+.save{position:absolute;top:10px;right:10px;z-index:2;width:44px;height:44px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(15,23,42,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);-webkit-tap-highlight-color:transparent;transition:transform .12s,background .15s}
+.save svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linejoin:round}
+.save:active{transform:scale(.9)}
+.save.on{background:var(--accent)}
+.save.on svg{fill:#fff}
+.save:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.chips button .lc{display:inline-block;min-width:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;line-height:18px;text-align:center}
+.chips button .lc[hidden]{display:none}
+.chips button.on .lc{background:rgba(255,255,255,.28)}
+.toolbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;font-size:.88rem;color:var(--muted)}
+.tb-actions{display:flex;gap:8px}
+.tb-actions button{font:inherit;font-size:.84rem;font-weight:600;padding:6px 14px;border:0;border-radius:999px;background:var(--soft);color:var(--accent);cursor:pointer}
+.tb-actions button:disabled{opacity:.45;cursor:default}
+.toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:max(24px,env(safe-area-inset-bottom));z-index:30;max-width:calc(100% - 32px);padding:10px 18px;border-radius:999px;background:var(--fg);color:var(--bg);font-size:.9rem;font-weight:500;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);animation:in .2s ease both}
+.toast[hidden]{display:none}
 .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:56px 0}
 
 .skel{height:340px;border-radius:20px;background:linear-gradient(100deg,var(--soft) 30%,var(--card) 50%,var(--soft) 70%);background-size:200% 100%;animation:sh 1.2s linear infinite}

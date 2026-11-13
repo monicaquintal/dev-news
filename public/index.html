@@ -58,6 +58,7 @@
     <div class="filters">
       <nav class="chips" id="cats" aria-label="Categoria">
         <button data-cat="all" class="on">Tudo</button>
+        <button data-cat="later" class="later">Ler mais tarde <span id="lcnt" class="lc" hidden></span></button>
         <button data-cat="dev">Dev</button>
         <button data-cat="seguranca">Segurança</button>
         <button data-cat="geral">Tecnologia</button>
@@ -74,6 +75,8 @@
 <main id="list" class="wrap grid" aria-live="polite">
   <div class="skel"></div><div class="skel"></div><div class="skel"></div>
 </main>
+<input id="file" type="file" accept="application/json,.json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script src="app.js"></script>
 </body>
 </html>
