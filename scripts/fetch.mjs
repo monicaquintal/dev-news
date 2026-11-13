@@ -290,7 +290,7 @@ async function main() {
 
   await writeFile(resolve(ROOT, "public/news.json"), JSON.stringify({ updated: new Date().toISOString(), topics: defs.map(({ id, label }) => ({ id, label })), items: all }));
   console.log(status.sort().join("\n"));
-  console.log(`\n${blocked} itens de propaganda/ofertas bloqueados`);
+  console.log(`\n${blocked} itens bloqueados por filters.json (propaganda, ofertas, futebol)`);
   console.log(`${all.length} notícias, ${all.filter((i) => i.image).length} com imagem, ${all.filter((i) => i.summary).length} com resumo`);
 }
 
