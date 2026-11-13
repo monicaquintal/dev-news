@@ -3,6 +3,18 @@
     "tech": "tecnolog|inova[çc]|startup|digital|software|aplicativo|\\bapp\\b|intelig[êe]ncia artificial|\\bIA\\b|ciber|hacker|backup|internet|\\b5G\\b|fibra [óo]tica|drone|rob[ôo]|inform[áa]tica|\\bTI\\b|data ?center|wi-?fi|conectividade|eletr[ôo]nic|hackathon|cidade inteligente|parque tecnol",
     "regiao": "santos|guaruj[áa]|cubat[ãa]o|s[ãa]o vicente|praia grande|bertioga|peru[íi]be|itanha[ée]m|mongagu[áa]|baixada|litoral|\\bAPS\\b|\\bETEC\\b|\\bFatec"
   },
+  "topics": [
+    {"id":"ia","label":"IA","re":"intelig[êe]ncia artificial|artificial intelligence|\\bLLMs?\\b|chatgpt|openai|anthropic|claude|gemini|copilot|machine learning|aprendizado de m[áa]quina|generativ|deepseek|\\bagents?\\b|agentes?\\b","reCase":"\\bIA\\b|\\bAI\\b"},
+    {"id":"vuln","label":"Vulnerabilidades","re":"vulnerabilit|vulnerabilidade|zero-?day|exploit|\\bpatch(es)?\\b|falha cr[íi]tica|critical flaw|security flaw|hotfix","reCase":"\\bRCE\\b|CVE-\\d"},
+    {"id":"ataques","label":"Ataques e vazamentos","re":"ransomware|malware|phishing|botnet|breach|vazamento|ataque (hacker|cibern)|ciberataque|cyber-?attack|hackers?|golpe|fraude|spyware|trojan|backdoor|stealer|sequestr"},
+    {"id":"privacidade","label":"Privacidade","re":"privacidade|privacy|vigil[âa]ncia|surveillance|criptografia|encryption|dados pessoais","reCase":"\\bLGPD\\b|\\bGDPR\\b|\\bVPN\\b"},
+    {"id":"cloud","label":"Cloud e DevOps","re":"\\bcloud\\b|nuvem|azure|google cloud|kubernetes|\\bk8s\\b|docker|devops|terraform|serverless|data ?center|github actions|observability|observabilidade","reCase":"\\bAWS\\b|\\bSRE\\b|CI/CD"},
+    {"id":"codigo","label":"Código e open source","re":"\\bpython\\b|javascript|typescript|\\brust\\b|golang|\\bjava\\b|kotlin|\\bphp\\b|\\bruby\\b|node\\.?js|\\breact\\b|\\bvue\\b|angular|framework|open[- ]source|c[óo]digo aberto|compil|\\bAPI\\b|linux|github|\\bgit\\b|\\bC\\+\\+|programador|developer|desenvolvedor"},
+    {"id":"mobile","label":"Celulares e apps","re":"iphone|android|galaxy|smartphone|celular|\\bapp\\b|\\bapps\\b|aplicativo|whatsapp|instagram|telegram|pixel","reCase":"\\biOS\\b"},
+    {"id":"hardware","label":"Hardware e chips","re":"\\bchips?\\b|processador|processor|semicondutor|semiconductor|nvidia|intel|quantum|qu[âa]ntic|notebook|\\bssd\\b","reCase":"\\bGPU\\b|\\bCPU\\b|\\bAMD\\b|\\bRAM\\b|\\bTSMC\\b"},
+    {"id":"games","label":"Games","re":"\\bgames?\\b|\\bgamers?\\b|video ?games?|jogos (eletr[ôo]nicos|digitais|de (PS|Xbox|PC))|playstation|\\bPS[45]\\b|xbox|nintendo|\\bsteam\\b|\\bgta\\b"},
+    {"id":"negocios","label":"Mercado e negócios","re":"startup|investiment|investment|rodada|funding|aquisi[çc][ãa]o|acquisition|acquires?|bilh[õo]|billion|valuation|demiss|layoff","reCase":"\\bIPO\\b|\\bCEO\\b"}
+  ],
   "blockTitle": [
     "mercado ?livre|magalu|magazine luiza|shopee|aliexpress|americanas|amazon prime|prime day|kabum",
     "black (friday|november)|cyber monday|\\b11\\.11\\b|\\b12\\.12\\b",
@@ -11,7 +23,5 @@
     "melhor(es)? .{0,40} em 20\\d\\d|para comprar|vale a pena comprar|onde comprar",
     "\\bdeals?\\b|\\bcoupons?\\b|\\bdiscounts?\\b|\\bon sale\\b|\\bsales? (is|are) live"
   ],
-  "blockUrl": [
-    "/(ofertas?|cupons?|promocoes|promocao|deals)(/|$)"
-  ]
+  "blockUrl": ["/(ofertas?|cupons?|promocoes|promocao|deals)(/|$)"]
 }

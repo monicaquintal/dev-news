@@ -261,7 +261,17 @@ async function main() {
   for (const i of all) if (i.image.startsWith("http://")) i.image = "https://" + i.image.slice(7);
 
   await mkdir(resolve(ROOT, "public"), { recursive: true });
-  await writeFile(resolve(ROOT, "public/news.json"), JSON.stringify({ updated: new Date().toISOString(), items: all }));
+  // etiquetas de assunto (filters.json > topics): palavras-chave no título e no resumo
+  let defs = [];
+  try { defs = JSON.parse(await readFile(resolve(ROOT, "filters.json"), "utf8")).topics || []; } catch {}
+  const compiled = defs.map((t) => ({ id: t.id, re: new RegExp(t.re, "i"), cs: t.reCase ? new RegExp(t.reCase) : null }));
+  for (const i of all) {
+    const text = `${i.title} ${i.summary}`;
+    const tags = compiled.filter((t) => t.re.test(text) || (t.cs && t.cs.test(text))).map((t) => t.id);
+    if (tags.length) i.topics = tags;
+  }
+
+  await writeFile(resolve(ROOT, "public/news.json"), JSON.stringify({ updated: new Date().toISOString(), topics: defs.map(({ id, label }) => ({ id, label })), items: all }));
   console.log(status.sort().join("\n"));
   console.log(`\n${blocked} itens de propaganda/ofertas bloqueados`);
   console.log(`${all.length} notícias, ${all.filter((i) => i.image).length} com imagem, ${all.filter((i) => i.summary).length} com resumo`);

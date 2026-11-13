@@ -7,6 +7,7 @@ Agregador leve de notícias de tecnologia: desenvolvimento, segurança da inform
 - Lista de notícias em cards com **foto, título e resumo** de algumas linhas.
 - **Card clicável**: abre a notícia original em nova aba, no navegador.
 - **Subtítulo em português** abaixo do título das notícias em inglês (tradução offline).
+- Botão de filtros (ao lado da busca) com **período** (24 h, 3 dias, 7 dias ou tudo) e **assuntos** (IA, Vulnerabilidades, Ataques e vazamentos, Privacidade, Cloud e DevOps, Código e open source, Celulares e apps, Hardware e chips, Games, Mercado e negócios). Dá para marcar mais de um assunto.
 - Filtros por categoria (Dev, Segurança, Tecnologia e **Baixada Santista**) e idioma (PT, EN), e busca por texto.
 - Tema claro ou escuro automático, conforme o celular.
 - Notícias já abertas ficam esmaecidas.
@@ -126,6 +127,8 @@ Para ampliar a seção regional (outras cidades, outros assuntos), edite `patter
 - `blockUrl`: se o **endereço** combinar, a notícia é descartada (ex.: `/ofertas/`).
 
 Por padrão ficam de fora lojas e promoções (Mercado Livre, Magalu, Shopee, Prime Day, Black Friday, 11.11), descontos, cupons e guias de compra ("Melhor TV em 2026: 8 modelos para comprar"). Como o filtro olha só o título, uma notícia séria que cite uma loja (por exemplo, um vazamento no Mercado Livre) também seria bloqueada: para liberar, remova o termo da lista. A coleta mostra quantos itens foram bloqueados.
+
+**Assuntos:** a lista fica em `topics` no `filters.json`. Cada assunto tem `id`, `label` (nome no site), `re` (palavras-chave, sem diferenciar maiúsculas) e, opcionalmente, `reCase` (para siglas que diferenciam maiúsculas, como `IA`, `AWS` e `GPU`). O coletor marca cada notícia com os assuntos cujas palavras aparecem no título ou no resumo; uma notícia pode ter vários. Para criar um assunto novo, basta acrescentar um item à lista. Notícias sem nenhuma palavra-chave ficam sem assunto e só aparecem quando nenhum assunto está marcado. O período só alcança os últimos 10 dias (`MAX_AGE_DAYS`).
 
 **Ajustes do coletor:** no topo de `scripts/fetch.mjs`, `MAX_ITEMS` (total de notícias), `PER_SOURCE` (por fonte) e `MAX_AGE_DAYS` (idade máxima).
 

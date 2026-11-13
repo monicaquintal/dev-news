@@ -3,7 +3,7 @@
   const list = $("#list");
   const COLORS = { dev: "var(--dev)", seguranca: "var(--seguranca)", geral: "var(--geral)", baixada: "var(--baixada)" };
   const LABELS = { dev: "Dev", seguranca: "Segurança", geral: "Tecnologia", baixada: "Baixada Santista" };
-  const state = { cat: "all", lang: "all", q: "", items: [] };
+  const state = { cat: "all", lang: "all", q: "", days: 0, topics: new Set(), items: [] };
 
   let read = new Set();
   try { read = new Set(JSON.parse(localStorage.getItem("read") || "[]")); } catch {}
@@ -70,11 +70,33 @@
     return a;
   }
 
+  function updateCount() {
+    const n = (state.days ? 1 : 0) + state.topics.size;
+    const c = $("#fcnt");
+    c.textContent = n;
+    c.hidden = !n;
+  }
+
+  function renderTopics(defs) {
+    const box = $("#topics");
+    box.replaceChildren(...defs.map((t) => {
+      const b = el("button", state.topics.has(t.id) ? "on" : "", t.label);
+      b.type = "button";
+      b.dataset.id = t.id;
+      b.setAttribute("aria-pressed", state.topics.has(t.id));
+      return b;
+    }));
+  }
+
   function render() {
+    updateCount();
+    const now = Date.now();
     const q = norm(state.q.trim());
     const items = state.items.filter((i) =>
       (state.cat === "all" || i.category === state.cat) &&
       (state.lang === "all" || i.lang === state.lang) &&
+      (!state.days || now - new Date(i.date) <= state.days * 864e5) &&
+      (!state.topics.size || (i.topics || []).some((t) => state.topics.has(t))) &&
       (!q || norm(`${i.title} ${i.titlePt || ""} ${i.summary} ${i.source}`).includes(q)));
     if (!items.length) {
       list.replaceChildren(el("p", "empty", "Nenhuma notícia encontrada."));
@@ -107,6 +129,36 @@
   }
   bind("#cats", "cat", "cat");
   bind("#langs", "lang", "lang");
+  // painel de filtros: período e assuntos
+  const panel = $("#panel"), fbtn = $("#fbtn");
+  fbtn.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    fbtn.setAttribute("aria-expanded", String(!panel.hidden));
+  });
+  $("#days").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    state.days = +b.dataset.days;
+    $("#days").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    render();
+  });
+  $("#topics").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    const id = b.dataset.id;
+    state.topics.has(id) ? state.topics.delete(id) : state.topics.add(id);
+    b.classList.toggle("on", state.topics.has(id));
+    b.setAttribute("aria-pressed", state.topics.has(id));
+    render();
+  });
+  $("#clear").addEventListener("click", () => {
+    state.days = 0;
+    state.topics.clear();
+    $("#days").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.days === "0"));
+    renderTopics(state.topicDefs || []);
+    render();
+  });
+
   let t;
   $("#q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 150); });
 
@@ -115,6 +167,8 @@
       const r = await fetch("news.json", { cache: "no-cache" });
       const d = await r.json();
       state.items = d.items;
+      state.topicDefs = d.topics || [];
+      renderTopics(state.topicDefs);
       const u = $("#updated");
       u.textContent = `Atualizado ${ago(d.updated)}`;
       u.hidden = false;

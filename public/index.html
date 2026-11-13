@@ -33,10 +33,28 @@
       </div>
       <span id="updated" class="pill" hidden></span>
     </div>
-    <label class="search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Buscar notícias…" aria-label="Buscar" autocomplete="off">
-    </label>
+    <div class="srow">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Buscar notícias…" aria-label="Buscar" autocomplete="off">
+      </label>
+      <button id="fbtn" class="fbtn" type="button" aria-label="Filtros de período e assunto" aria-expanded="false" aria-controls="panel">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span id="fcnt" class="cnt" hidden></span>
+      </button>
+    </div>
+    <section id="panel" class="panel" hidden>
+      <h3>Período</h3>
+      <nav class="seg wide" id="days" aria-label="Período">
+        <button data-days="1">24 h</button>
+        <button data-days="3">3 dias</button>
+        <button data-days="7">7 dias</button>
+        <button data-days="0" class="on">Tudo</button>
+      </nav>
+      <h3>Assuntos <small>(pode marcar mais de um)</small></h3>
+      <div class="tchips" id="topics"></div>
+      <button id="clear" class="clear" type="button">Limpar filtros</button>
+    </section>
     <div class="filters">
       <nav class="chips" id="cats" aria-label="Categoria">
         <button data-cat="all" class="on">Tudo</button>
