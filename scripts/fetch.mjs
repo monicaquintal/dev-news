@@ -11,7 +11,7 @@ const REGIONAL_LIMIT = 40; // notícias da Baixada Santista mantidas, além das 
 const MAX_AGE_DAYS = 10;
 const FEED_TIMEOUT = 15000;
 const OG_TIMEOUT = 6000;
-const OG_LIMIT = 40; // máximo de páginas consultadas atrás de og:image
+const OG_LIMIT = 80; // máximo de páginas consultadas atrás de imagem e resumo faltantes
 const UA = "dev-news-bot/1.0 (agregador pessoal de RSS)";
 
 const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", hellip: "…", ndash: "–", mdash: "—", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“" };
@@ -135,15 +135,25 @@ async function get(url, timeout) {
   return res.text();
 }
 
-async function ogImage(url) {
+// lê a página da notícia e devolve a imagem (og:image) e a descrição (og:description / description)
+async function pageMeta(url) {
   try {
-    const html = (await get(url, OG_TIMEOUT)).slice(0, 60000);
-    const m = html.match(/<meta[^>]+(?:property|name)=["']og:image["'][^>]*content=["']([^"']+)["']/i)
-      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']og:image["']/i);
-    if (!m) return "";
-    return new URL(decode(m[1]), url).href;
+    const html = (await get(url, OG_TIMEOUT)).slice(0, 80000);
+    const meta = (names) => {
+      for (const n of names) {
+        const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${n}["'][^>]*content=["']([^"']+)["']`, "i"))
+          || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']${n}["']`, "i"));
+        if (m) return decode(m[1]);
+      }
+      return "";
+    };
+    const img = meta(["og:image", "twitter:image"]);
+    return {
+      image: img ? new URL(img, url).href : "",
+      description: truncate(stripHtml(meta(["og:description", "description", "twitter:description"]))),
+    };
   } catch {
-    return "";
+    return { image: "", description: "" };
   }
 }
 
@@ -230,32 +240,39 @@ async function main() {
   const all = [...deduped.filter((i) => i.category !== "baixada").slice(0, MAX_ITEMS), ...regional]
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  // imagens faltantes via og:image (itens regionais primeiro; páginas do Google Notícias não servem)
+  // imagem e resumo faltantes, lidos da própria página (regionais primeiro; páginas do Google Notícias não servem)
   const missing = all
-    .filter((i) => !i.image && !i.gnews && i.source !== "Hacker News" && i.source !== "Lobsters")
+    .filter((i) => (!i.image || !i.summary) && !i.gnews)
     .sort((a, b) => (b.category === "baixada") - (a.category === "baixada"))
     .slice(0, OG_LIMIT);
-  await Promise.all(missing.map(async (i) => { i.image = await ogImage(i.url); }));
+  await Promise.all(missing.map(async (i) => {
+    const m = await pageMeta(i.url);
+    if (!i.image) i.image = m.image;
+    // descrição curta ou igual ao título não ajuda o leitor
+    if (!i.summary && m.description.length >= 40 && normTitle(m.description) !== normTitle(i.title)) i.summary = m.description;
+  }));
 
-  // tradução dos títulos em inglês (com cache para não retraduzir a cada coleta)
+  // tradução EN -> PT de títulos e resumos (com cache para não retraduzir a cada coleta)
   const cachePath = resolve(ROOT, ".cache/translations.json");
   let cache = {};
   try { cache = JSON.parse(await readFile(cachePath, "utf8")); } catch {}
   const toTranslate = all.filter((i) => i.lang === "en");
-  const pending = toTranslate.filter((i) => !cache[i.title]);
-  const done = translateBatch([...new Set(pending.map((i) => i.title))]);
+  const texts = [...new Set(toTranslate.flatMap((i) => [i.title, i.summary].filter(Boolean)))];
+  const pending = texts.filter((t) => !cache[t]);
+  const done = translateBatch(pending);
   let failed = 0;
-  for (const i of pending) { if (done[i.title]) cache[i.title] = done[i.title]; else failed++; }
+  for (const t of pending) { if (done[t]) cache[t] = done[t]; else failed++; }
+  const differs = (a, b) => a && normTitle(a) !== normTitle(b);
   for (const i of toTranslate) {
-    const t = cache[i.title];
-    if (t && normTitle(t) !== normTitle(i.title)) i.titlePt = t;
+    if (differs(cache[i.title], i.title)) i.titlePt = cache[i.title];
+    if (i.summary && differs(cache[i.summary], i.summary)) i.summaryPt = cache[i.summary];
   }
   // mantém no cache só o que está em uso
-  const keep = new Set(toTranslate.map((i) => i.title));
+  const keep = new Set(texts);
   cache = Object.fromEntries(Object.entries(cache).filter(([k]) => keep.has(k)));
   await mkdir(dirname(cachePath), { recursive: true });
   await writeFile(cachePath, JSON.stringify(cache));
-  console.log(`traduções: ${pending.length - failed} novas, ${failed} falhas, ${toTranslate.length - pending.length} do cache`);
+  console.log(`traduções: ${pending.length - failed} novas, ${failed} falhas, ${texts.length - pending.length} do cache`);
 
   // força https nas imagens quando possível
   for (const i of all) if (i.image.startsWith("http://")) i.image = "https://" + i.image.slice(7);

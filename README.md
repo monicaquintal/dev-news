@@ -38,9 +38,9 @@ sources.json ──> scripts/fetch.mjs ──> public/news.json ──> public/ 
 
 1. `scripts/fetch.mjs` lê os feeds RSS/Atom de `sources.json`, em paralelo. Uma fonte fora do ar não derruba as outras.
 2. Normaliza cada item (título, link, fonte, categoria, data, resumo e imagem), remove duplicados e mantém os 200 mais recentes dos últimos 10 dias.
-3. O resumo vem do feed, sem HTML e cortado em cerca de 280 caracteres.
-4. A imagem vem do feed. Quando falta, o coletor tenta o `og:image` da página da notícia. Só a URL é guardada; a imagem carrega sob demanda no celular.
-5. `scripts/translate.py` traduz os títulos em inglês com o modelo offline Argos (via `ctranslate2`, sem torch). As traduções ficam em cache em `.cache/`, então cada coleta traduz só os títulos novos.
+3. O resumo vem do feed, sem HTML e cortado em cerca de 280 caracteres. Quando o feed não traz resumo (como no Hacker News), o coletor lê a descrição da página da notícia (`og:description`). Notícias do Google Notícias seguem sem resumo, porque o endereço delas é um redirecionamento.
+4. A imagem vem do feed. Quando falta, o coletor tenta o `og:image` da página da notícia. Só a URL é guardada; a imagem carrega sob demanda no celular. A leitura das páginas é limitada a 80 por coleta (`OG_LIMIT`).
+5. `scripts/translate.py` traduz os títulos **e os resumos** em inglês com o modelo offline Argos (via `ctranslate2`, sem torch), frase a frase. O card mostra o resumo em português para essas notícias. As traduções ficam em cache em `.cache/`, então cada coleta traduz só o que é novo.
 6. O resultado vai para `public/news.json`, que o site lê.
 
 ## Estrutura

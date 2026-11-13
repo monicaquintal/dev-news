@@ -4,7 +4,7 @@ Uso: python3 scripts/translate.py < entrada.json > saida.json
 Entrada: lista JSON de strings. Saída: objeto JSON {original: traducao}.
 Na primeira execução baixa o modelo (~64 MB) para .cache/argos/.
 """
-import json, os, sys, urllib.request, zipfile
+import json, os, re, sys, urllib.request, zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, ".pydeps"))
@@ -46,14 +46,25 @@ def main():
     ensure_model()
     sp = sentencepiece.SentencePieceProcessor(model_file=os.path.join(PKG, "sentencepiece.model"))
     tr = ctranslate2.Translator(os.path.join(PKG, "model"), device="cpu", inter_threads=1, intra_threads=os.cpu_count() or 2)
-    out = {}
-    for i in range(0, len(titles), 32):
-        batch = titles[i:i + 32]
+    # textos longos (resumos) são traduzidos frase a frase, que é onde o modelo vai melhor
+    parts = {t: split_sentences(t) for t in titles}
+    flat = sorted({p for ps in parts.values() for p in ps})
+    tx = {}
+    for i in range(0, len(flat), 32):
+        batch = flat[i:i + 32]
         toks = [sp.encode(t, out_type=str) for t in batch]
-        res = tr.translate_batch(toks, beam_size=2, max_batch_size=32, max_decoding_length=128)
+        res = tr.translate_batch(toks, beam_size=2, max_batch_size=32, max_decoding_length=160)
         for t, r in zip(batch, res):
-            out[t] = "".join(r.hypotheses[0]).replace("▁", " ").strip()
+            tx[t] = "".join(r.hypotheses[0]).replace("▁", " ").strip()
+    out = {t: " ".join(tx[p] for p in ps).strip() for t, ps in parts.items()}
     json.dump(out, sys.stdout, ensure_ascii=False)
+
+
+def split_sentences(text):
+    if len(text) <= 120:
+        return [text]
+    parts = re.split(r'(?<=[.!?…])\s+(?=[A-ZÀ-Ý0-9"“‘(])', text)
+    return [p for p in (s.strip() for s in parts) if p] or [text]
 
 
 main()

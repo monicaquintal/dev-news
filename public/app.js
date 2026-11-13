@@ -33,6 +33,7 @@
       lang: x.lang === "en" ? "en" : "pt",
       date: isNaN(d) ? new Date(saved).toISOString() : d.toISOString(),
       summary: String(x.summary || "").slice(0, 400),
+      summaryPt: x.summaryPt ? String(x.summaryPt).slice(0, 700) : undefined,
       image: isHttp(x.image) ? x.image : "",
       titlePt: x.titlePt ? String(x.titlePt).slice(0, 400) : undefined,
       topics: Array.isArray(x.topics) ? x.topics.map(String).slice(0, 10) : undefined,
@@ -174,7 +175,12 @@
       sub.lang = "pt-BR";
       body.append(sub);
     }
-    if (i.summary) body.append(el("p", "sum", i.summary));
+    const resumo = i.summaryPt || i.summary;
+    if (resumo) {
+      const p = el("p", "sum", resumo);
+      if (i.summaryPt) p.lang = "pt-BR";
+      body.append(p);
+    }
     a.append(body);
     a.addEventListener("click", () => { read.add(i.url); art.classList.add("read"); saveRead(); });
 
@@ -217,7 +223,7 @@
       (state.lang === "all" || i.lang === state.lang) &&
       (!state.days || now - new Date(i.date) <= state.days * 864e5) &&
       (!state.topics.size || (i.topics || []).some((t) => state.topics.has(t))) &&
-      (!q || norm(`${i.title} ${i.titlePt || ""} ${i.summary} ${i.source}`).includes(q)));
+      (!q || norm(`${i.title} ${i.titlePt || ""} ${i.summary} ${i.summaryPt || ""} ${i.source}`).includes(q)));
     const head = isLater ? [toolbar()] : [];
     if (!items.length) {
       const msg = isLater && !later.length
